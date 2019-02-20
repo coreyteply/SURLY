@@ -10,7 +10,8 @@ public class Main{
 
    public static void main(String[] args) throws FileNotFoundException{
    
-      ReadFile.readFile(args);
+      ReadFile startProgram = new ReadFile();
+      startProgram.readFile(args);
    
    }
 

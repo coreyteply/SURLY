@@ -8,18 +8,20 @@ import java.io.FileNotFoundException;
 
 public class LexicalAnalyzer{
 
-   public static Scanner input;
-   public static Scanner currentLine;
-   public static String currentToken;
-   public static int currentParse = 0; // 0 = scanNext, 1=handleRelation, 2=handleInsert, 3=handlePrint, 4=handleDestroy, 5=handleDelete
-   public static StringBuilder relation;
-   public static StringBuilder insert;
-   public static LinkedList<String> printx;
-   public static LinkedList<String> destroy;
-   public static LinkedList<String> deletex;
+   private DataBase DB;
+   private Scanner input;
+   private Scanner currentLine;
+   private String currentToken;
+   private int currentParse = 0; // 0 = scanNext, 1=handleRelation, 2=handleInsert, 3=handlePrint, 4=handleDestroy, 5=handleDelete
+   private StringBuilder relation;
+   private StringBuilder insert;
+   private LinkedList<String> printx;
+   private LinkedList<String> destroy;
+   private LinkedList<String> deletex;
 
-    public static void parseInput(Scanner inputFile) throws NoSuchElementException{
+    public void parseInput(Scanner inputFile) throws NoSuchElementException{
    
+      DB = new DataBase();
       input = inputFile; //make local copy of this instance in this class
       currentToken = null;
       
@@ -33,7 +35,7 @@ public class LexicalAnalyzer{
       }
    }
    
-   public static boolean nullToken(){
+   private boolean nullToken(){
       if(currentToken==null){
          return true;
          }
@@ -41,10 +43,11 @@ public class LexicalAnalyzer{
    }
    
    //gets you your next token
-   public static void updateNext(){
+   private void updateNext(){
       
       if(currentLine.hasNext()){
          currentToken = currentLine.next();
+        // System.out.println(currentToken);
       }else if(input.hasNextLine() && !(currentLine.hasNext())){
          currentLine = new Scanner(input.nextLine());
          updateNext();
@@ -54,7 +57,7 @@ public class LexicalAnalyzer{
    }  
          
    //looks through the file, and goes into the desired methods based on the current token
-   public static void scanNext(){
+   private void scanNext(){
    
       if(currentToken.contains("/*")){
          currentParse=0;
@@ -87,7 +90,7 @@ public class LexicalAnalyzer{
    }
    
    //this just goes over everything that's within the comment, doesn't save anything
-   public static void handleComment(){
+   private void handleComment(){
       
       if(currentToken.equals("*/")){
          updateNext();
@@ -126,7 +129,7 @@ public class LexicalAnalyzer{
       }
    }
    
-   public static void handleRelation(){
+   private void handleRelation(){
    
       //cleans up the token if need be
       if(dopedToken()){
@@ -137,7 +140,7 @@ public class LexicalAnalyzer{
          if(currentToken.contains(";")){ //if it has a semi colon, then it sends it to the catalog class to be stored
             relation.append(currentToken);
             String newRelation = relation.toString();
-            Catalog.storeRelation(newRelation);
+            DB.storeRelation(newRelation);
             updateNext();
             scanNext();
          }else if(currentToken.contains("/*")){//ignores everything within the comment
@@ -152,12 +155,12 @@ public class LexicalAnalyzer{
       }
    }
    
-   public static void handleInsert(){
+   private void handleInsert(){
       
          if(currentToken.contains(";")){
             insert.append(currentToken);
             String newInsert = insert.toString();
-            Catalog.storeInsert(newInsert);
+            DB.storeInsert(newInsert);
             updateNext();
             scanNext();
          }else if(currentToken.contains("/*")){
@@ -172,15 +175,16 @@ public class LexicalAnalyzer{
       
    }   
    
-   public static void handlePrint(){
+   private void handlePrint(){
       
       if(dopedToken()){
          currentToken = cleanToken();
          handlePrint();
       }else{
          if(currentToken.contains(";")){
+            colonoscopy();
             printx.add(currentToken);
-            Catalog.printRelation(printx);
+            DB.printRelation(printx);
             updateNext();
             scanNext();
          }else if(currentToken.contains("/*")){
@@ -194,15 +198,16 @@ public class LexicalAnalyzer{
       }   
    }
    
-   public static void handleDestroy(){
+   private void handleDestroy(){
     
 	  if(dopedToken()){
          currentToken = cleanToken();
          handleDestroy();
       }else{
          if(currentToken.contains(";")){
+            colonoscopy();
             destroy.add(currentToken);
-            Catalog.destroy_relation(destroy);
+            DB.destroy_relation(destroy);
             updateNext();
             scanNext();
          }else if(currentToken.contains("/*")){
@@ -217,15 +222,16 @@ public class LexicalAnalyzer{
    }
 
 
-   public static void handleDelete(){
+   private void handleDelete(){
     
 	  if(dopedToken()){
          currentToken = cleanToken();
          handleDelete();
       }else{
          if(currentToken.contains(";")){
+            colonoscopy();
             deletex.add(currentToken);
-            Catalog.deleteRelation(deletex);
+            DB.deleteRelation(deletex);
             updateNext();
             scanNext();
          }else if(currentToken.contains("/*")){
@@ -240,7 +246,7 @@ public class LexicalAnalyzer{
    }
 
    
-   public static boolean dopedToken(){
+   private boolean dopedToken(){
    
       if(currentToken.contains(",") || currentToken.contains("(") || currentToken.contains(")") || currentToken.contains("'") ||
                currentToken.contains("<") || currentToken.contains(">")  || currentToken.contains("=")){
@@ -252,7 +258,7 @@ public class LexicalAnalyzer{
    }
    
    //cleans up a token if it has any sort of puncuation on it
-   public static String cleanToken(){
+   private String cleanToken(){
    
       int length = currentToken.length();
       int count=0;
@@ -272,31 +278,30 @@ public class LexicalAnalyzer{
    }
    
    //gets rid of the semi colon
-   public static String cleanTokenFinal(String x){
-      
-      int length = x.length();
-      int count=0;
-      StringBuilder cleanBoi = new StringBuilder();
-      while(count<length){
-         if(x.charAt(count)==';'){
-            count++;
+   private void colonoscopy(){
+   
+      int length = currentToken.length();
+      int i=0;
+      StringBuilder toReturn = new StringBuilder();
+      while(i<length){
+         if(currentToken.charAt(i)==';'){
+            i++;
          }else{
-            cleanBoi.append(x.charAt(count));
-            count++;
+            toReturn.append(currentToken.charAt(i));
+            i++;
          }
       }
-         
-      return cleanBoi.toString();
+      currentToken = toReturn.toString();
+   
    }
-
       
          
-   public static void endFile(){
+   private void endFile(){
       //System.out.println("you are done reading dis file");
    }      
    
    //checks to see if the file is done
-   public static boolean fileDone(){
+   private boolean fileDone(){
       if(!(input.hasNextLine())){
          return true;
       }else{

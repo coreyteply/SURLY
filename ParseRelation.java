@@ -8,10 +8,10 @@ import java.io.FileNotFoundException;
 
 public class ParseRelation{
 
-   public static Scanner currentRelation;
-   public static String currentToken;
+   Scanner currentRelation;
+   String currentToken;
    
-   public static Relation parseRelation(String x){
+   Relation parseRelation(String x){
    
       currentRelation = new Scanner(x);
       updateNext();
@@ -51,7 +51,7 @@ public class ParseRelation{
    }      
    
    
-   public static String cleanToken(){
+   private String cleanToken(){
       
       int length = currentToken.length();
       int count=0;
@@ -69,7 +69,7 @@ public class ParseRelation{
    }
    
    
-   public static void updateNext(){
+   private void updateNext(){
       
       if(currentRelation.hasNext()){
          currentToken = currentRelation.next();

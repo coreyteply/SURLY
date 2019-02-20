@@ -4,17 +4,21 @@
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.*;
 import java.lang.String;
 import java.util.Scanner;
 
 //follows the same logic as parseRelation
 public class Insert {
     
-    public static Scanner currentInsert;
-    public static String currentToken;
+    Scanner currentInsert;
+    String currentToken;
     String insert_2_curr_table;
     Tuple curr_tuple;
+    
+    //this initializes the class object
+    public Insert(){
+    
+    }
 
     // Insert Object right hurr
     public Insert (String input, Tuple tuple){
@@ -23,7 +27,7 @@ public class Insert {
     }
     
     // Parse Insert method, will return an insert object
-    public static Insert parseInsert(String input){
+    Insert parseInsert(String input){
         currentInsert = new Scanner(input);
         updateNext();
         updateNext();
@@ -53,7 +57,7 @@ public class Insert {
     }
     
     
-    public static String cleanToken(){
+    private String cleanToken(){
       
       int length = currentToken.length();
       int count=0;
@@ -71,14 +75,13 @@ public class Insert {
    }
    
    //keeps things inbetween single quotes as "one" token
-   public static String parseSingleQuote(){
+   private String parseSingleQuote(){
       StringBuilder innerQuote = new StringBuilder();
-      innerQuote.append(currentToken.charAt(0));
       int i =1;
       int length = currentToken.length();
       while(i<currentToken.length()){
-         innerQuote.append(currentToken.charAt(i));
-         i++;
+        innerQuote.append(currentToken.charAt(i));
+        i++;
       }
       i = 0;
       innerQuote.append(" ");
@@ -91,7 +94,7 @@ public class Insert {
       length = currentToken.length();
       if(currentToken.contains("'") || currentToken.contains(";")){
          while(i<length){
-            if(currentToken.charAt(i)==';'){
+            if(currentToken.charAt(i)==';' || currentToken.charAt(i)=='\''){
                i++;
             }else{
              innerQuote.append(currentToken.charAt(i));
@@ -108,7 +111,7 @@ public class Insert {
          
    
    
-    public static void updateNext(){
+    private void updateNext(){
 
         if(currentInsert.hasNext()){
             currentToken = currentInsert.next();
