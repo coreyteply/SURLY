@@ -1,4 +1,3 @@
-//Corey Teply
 //CS330 - Winter 2019 - Group 9
 //SURLY
 
